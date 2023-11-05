@@ -49,7 +49,14 @@ def issuer_card():
     if not Cid:
      mb.showerror('Issuer ID cannot be zero!', 'Can\'t keep Issuer ID empty, it must have a value')
     else:
-      return Cid
+        cursor.execute('Select * from users where CARD_ID = %s',(Cid))
+        res= cursor.fetchall()
+        if res:
+            cursor.execute('UPDATE users SET issued_books = issued_books + 1 WHERE card_id = %s;',(Cid))
+        else:
+            mb.showerror('Issuer ID not found!', 'No such user, please re-check the Card-id.')
+
+        return Cid
 
 
 def clear_fields():
