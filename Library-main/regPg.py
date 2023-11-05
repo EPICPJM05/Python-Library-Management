@@ -40,9 +40,12 @@ def submitData():
 
             if result:
                 mb.showinfo("Login Successful", "Welcome, " + result[0][1])
-                import admin
-                admin.root.update()
-                admin.root.mainloop()
+                if nameVal.lower() == "poojan" or nameVal.lower() == "bhavya" or nameVal.lower() == "jay":
+                    import admin
+                    admin.root.update()
+                    admin.root.mainloop()
+                else:
+                    pass
             else:
                 mb.showerror("Login Failed", "Invalid credentials. Please try again")
         except mysql.connector.Error as err:
