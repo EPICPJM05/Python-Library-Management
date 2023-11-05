@@ -41,18 +41,18 @@ def display_records():
         for records in data:
             tree.insert('', END, values=records)
     except mysql.connector.Error as err:
-        print("MySQL Error:", err)
+        print("MySQL Error1:", err)
 
 
 def issuer_card():
     Cid = sd.askstring('Issuer Card ID', 'What is the Issuer\'s Card ID?\t\t\t')
     if not Cid:
-     mb.showerror('Issuer ID cannot be zero!', 'Can\'t keep Issuer ID empty, it must have a value')
+        mb.showerror('Issuer ID cannot be zero!', 'Can\'t keep Issuer ID empty, it must have a value')
     else:
-        cursor.execute('Select * from users where CARD_ID = %s',(Cid))
+        cursor.execute('Select * from users where CARD_ID = %s',(Cid,))
         res= cursor.fetchall()
         if res:
-            cursor.execute('UPDATE users SET issued_books = issued_books + 1 WHERE card_id = %s;',(Cid))
+            cursor.execute('UPDATE users SET issued_books = issued_books + 1 WHERE card_id = %s;',(Cid,))
         else:
             mb.showerror('Issuer ID not found!', 'No such user, please re-check the Card-id.')
 
@@ -60,10 +60,10 @@ def issuer_card():
 
 
 def clear_fields():
-	global bk_status, bk_id, bk_name, author_name, card_id
+	global bk_status, bk_id, bk_name, author_name, Cid
 
 	bk_status.set('Available')
-	for i in ['bk_id', 'bk_name', 'author_name', 'card_id']:
+	for i in ['bk_id', 'bk_name', 'author_name', 'Cid']:
 		exec(f"{i}.set('')")
 		bk_id_entry.config(state='normal')
 	try:
@@ -79,12 +79,12 @@ def clear_and_display():
 
 def add_record():
     global connector
-    global bk_name, bk_id, author_name, bk_status, card_id
+    global bk_name, bk_id, author_name, bk_status, Cid
 
     if bk_status.get() == 'Issued':
-        card_id.set(issuer_card())
+        Cid.set(issuer_card())
     else:
-        card_id.set('N/A')
+        Cid.set('N/A')
 
     surety = mb.askyesno('Are you sure?',
                         'Are you sure this is the data you want to enter?\nPlease note that Book ID cannot be changed in the future')
@@ -106,11 +106,11 @@ def add_record():
                 mb.showerror('Book ID already in use!',
                              'The Book ID you are trying to enter is already in the database, please alter that book\'s record or check any discrepancies on your side')
             else:
-                print("MySQL Error:", err)
+                print("MySQL Error2:", err)
 
 
 def view_record():
-	global bk_name, bk_id, bk_status, author_name, card_id
+	global bk_name, bk_id, bk_status, author_name, Cid
 	global tree
 
 	if not tree.focus():
@@ -124,24 +124,24 @@ def view_record():
 	bk_name.set(selection[0])   ;   bk_id.set(selection[1]) ; bk_status.set(selection[3])
 	author_name.set(selection[2])
 	try:
-		card_id.set(selection[4])
+		Cid.set(selection[4])
 	except:
-		card_id.set('')
+		Cid.set('')
 
 
 def update_record():
     def update():
-        global bk_status, bk_name, bk_id, author_name, card_id
+        global bk_status, bk_name, bk_id, author_name, Cid
         global connector, tree
 
         if bk_status.get() == 'Issued':
-            card_id.set(issuer_card())
+            Cid.set(issuer_card())
         else:
-            card_id.set('N/A')
+            Cid.set('N/A')
 
         try:
             cursor.execute('UPDATE Library SET BK_NAME = %s, BK_STATUS = %s, AUTHOR_NAME = %s, CARD_ID = %s WHERE BK_ID = %s',
-                           (bk_name.get(), bk_status.get(), author_name.get(), card_id.get(), bk_id.get()))
+                           (bk_name.get(), bk_status.get(), author_name.get(), Cid.get(), bk_id.get()))
             connector.commit()
 
             clear_and_display()
@@ -151,7 +151,7 @@ def update_record():
             clear.config(state='normal')
 
         except mysql.connector.Error as err:
-            print("MySQL Error:", err)
+            print("MySQL Error:3", err)
 
     view_record()
     bk_id_entry.config(state='disable')
@@ -179,7 +179,7 @@ def remove_record():
 
         clear_and_display()
     except mysql.connector.Error as err:
-        print("MySQL Error:", err)
+        print("MySQL Error4:", err)
 
 
 def delete_inventory():
@@ -192,7 +192,7 @@ def delete_inventory():
 		return
 
 def change_availability():
-    global card_id, tree, cursor
+    global tree, cursor, connector
 
     if not tree.selection():
         mb.showerror('Error!', 'Please select a book from the database')
@@ -200,7 +200,7 @@ def change_availability():
 
     current_item = tree.focus()
     values = tree.item(current_item)
-    BK_id = values['values'][1]
+    BK_id = int(values['values'][1])
     BK_status = values["values"][3]
 
     if BK_status == 'Issued':
@@ -210,15 +210,17 @@ def change_availability():
                 cursor.execute('UPDATE Library SET BK_STATUS = %s, CARD_ID = %s WHERE BK_ID = %s', ('Available', 'N/A', BK_id))
                 connector.commit()
             except mysql.connector.Error as err:
-                print("MySQL Error:", err)
+                print("MySQL Error5:", err)
         else:
             mb.showinfo('Cannot be returned', 'The book status cannot be set to Available unless it has been returned')
     else:
         try:
-            cursor.execute('UPDATE Library SET BK_STATUS = %s, CARD_ID = %s WHERE BK_ID = %s', ('Issued', issuer_card(), BK_id))
+            card_id = issuer_card()  # Convert StringVar to string
+            cursor.execute('UPDATE Library SET BK_STATUS = %s, CARD_ID = %s WHERE BK_ID = %s', ('Issued', card_id, BK_id))
             connector.commit()
         except mysql.connector.Error as err:
-            print("MySQL Error:", err)
+            print("MySQL Error6:", err)
+
     clear_and_display()
 
 
@@ -245,7 +247,7 @@ bk_status = StringVar()
 bk_name = StringVar()
 bk_id = StringVar()
 author_name = StringVar()
-card_id = StringVar()
+Cid = StringVar()
 
 # Frames
 left_frame = Frame(root, bg=lf_bg)
