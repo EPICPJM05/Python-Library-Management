@@ -91,10 +91,10 @@ def add_record():
 
     if surety:
         try:
-            # Use cursor.execute to insert data into the 'Library' table
+            # Insert data into the 'Library' table
             cursor.execute(
                 'INSERT INTO Library (BK_NAME, BK_ID, AUTHOR_NAME, BK_STATUS, CARD_ID) VALUES (%s, %s, %s, %s, %s)',
-                (bk_name.get(), bk_id.get(), author_name.get(), bk_status.get(), card_id.get())
+                (bk_name.get(), bk_id.get(), author_name.get(), bk_status.get(), Cid.get())
             )
             connector.commit()
 
@@ -215,7 +215,7 @@ def change_availability():
             mb.showinfo('Cannot be returned', 'The book status cannot be set to Available unless it has been returned')
     else:
         try:
-            card_id = issuer_card()  # Convert StringVar to string
+            card_id = issuer_card() 
             cursor.execute('UPDATE Library SET BK_STATUS = %s, CARD_ID = %s WHERE BK_ID = %s', ('Issued', card_id, BK_id))
             connector.commit()
         except mysql.connector.Error as err:
