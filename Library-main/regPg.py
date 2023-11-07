@@ -22,7 +22,7 @@ attemptCnt = 0
 def submitData():
     global attemptCnt
     attemptCnt += 1
-    if attemptCnt > 3:
+    if attemptCnt >= 4:
         mb.showerror("Login Failed", "You have exceeded your login attempts.")
     else:
         nameVal = name_entry.get()
@@ -40,12 +40,13 @@ def submitData():
 
             if result:
                 mb.showinfo("Login Successful", "Welcome, " + result[0][1])
-                if nameVal.lower() == "poojan" or nameVal.lower() == "bhavya" or nameVal.lower() == "jay":
+                if nameVal.lower() == "poojan" or nameVal.lower() == "bhavya" or nameVal.lower() == "jay"  or nameVal.lower() == "rupali":
                     import admin
                     admin.root.update()
                     admin.root.mainloop()
                 else:
-                    pass
+                    import userPanel
+                    userPanel.root.mainloop()
             else:
                 mb.showerror("Login Failed", "Invalid credentials. Please try again")
         except mysql.connector.Error as err:
