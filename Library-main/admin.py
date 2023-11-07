@@ -76,7 +76,6 @@ def clear_and_display():
 	clear_fields()
 	display_records()
 
-
 def add_record():
     global connector
     global bk_name, bk_id, author_name, bk_status, Cid
@@ -102,10 +101,10 @@ def add_record():
 
             mb.showinfo('Record added', 'The new record was successfully added to your database')
         except mysql.connector.Error as err:
-            if err.errno == mysql.connector.errorcode.ER_DUP_ENTRY:
-                mb.showerror('Book ID already in use!',
-                             'The Book ID you are trying to enter is already in the database, please alter that book\'s record or check any discrepancies on your side')
-            else:
+            # if err.errno == mysql.connector.errorcode.ER_DUP_ENTRY:
+            #     mb.showerror('Book ID already in use!',
+            #                  'The Book ID you are trying to enter is already in the database, please alter that book\'s record or check any discrepancies on your side')
+            # else:
                 print("MySQL Error2:", err)
 
 
@@ -160,6 +159,7 @@ def update_record():
     edit.place(x=50, y=375)
 
 
+
 def remove_record():
     if not tree.selection():
         mb.showerror('Error!', 'Please select an item from the database')
@@ -190,9 +190,23 @@ def delete_inventory():
 		connector.commit()
 	else:
 		return
+def bookReturned():
+    Cid = sd.askstring('Issuer Card ID', 'What is the Issuer\'s Card ID?\t\t\t')
+    if not Cid:
+        mb.showerror('Issuer ID cannot be zero!', 'Can\'t keep Issuer ID empty, it must have a value')
+    else:
+        cursor.execute('Select * from users where CARD_ID = %s',(Cid,))
+        res= cursor.fetchall()
+        if res:
+            cursor.execute('UPDATE users SET issued_books = issued_books - 1 WHERE card_id = %s;',(Cid,))
+        else:
+            mb.showerror('Issuer ID not found!', 'No such user, please re-check the Card-id.')
+
+        return Cid
+    
 
 def change_availability():
-    global tree, cursor, connector
+    global tree, cursor, connector,Cid
 
     if not tree.selection():
         mb.showerror('Error!', 'Please select a book from the database')
@@ -207,6 +221,7 @@ def change_availability():
         surety = mb.askyesno('Is return confirmed?', 'Has the book been returned to you?')
         if surety:
             try:
+                card_id = bookReturned()
                 cursor.execute('UPDATE Library SET BK_STATUS = %s, CARD_ID = %s WHERE BK_ID = %s', ('Available', 'N/A', BK_id))
                 connector.commit()
             except mysql.connector.Error as err:
@@ -284,10 +299,8 @@ clear.place(x=50, y=435)
 # Right Top Frame
 Button(RT_frame, text='Delete book record', font=btn_font, bg=btn_hlb_bg, width=17, command=remove_record).place(x=8, y=30)
 Button(RT_frame, text='Delete full inventory', font=btn_font, bg=btn_hlb_bg, width=17, command=delete_inventory).place(x=178, y=30)
-Button(RT_frame, text='Update book details', font=btn_font, bg=btn_hlb_bg, width=17,
-       command=update_record).place(x=348, y=30)
-Button(RT_frame, text='Change Book Availability', font=btn_font, bg=btn_hlb_bg, width=19,
-       command=change_availability).place(x=518, y=30)
+Button(RT_frame, text='Update book details', font=btn_font, bg=btn_hlb_bg, width=17,command=update_record).place(x=348, y=30)
+Button(RT_frame, text='Change Book Availability', font=btn_font, bg=btn_hlb_bg, width=19,command=change_availability).place(x=518, y=30)
 
 # Right Bottom Frame
 Label(RB_frame, text='BOOK INVENTORY', bg=rbf_bg, font=("Noto Sans CJK TC", 15, 'bold')).pack(side=TOP, fill=X)
