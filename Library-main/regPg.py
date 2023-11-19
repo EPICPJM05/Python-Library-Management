@@ -41,9 +41,11 @@ def submitData():
             if result:
                 mb.showinfo("Login Successful", "Welcome, " + result[0][1])
                 if nameVal.lower() == "poojan" or nameVal.lower() == "bhavya" or nameVal.lower() == "jay"  or nameVal.lower() == "rupali":
+                    rt.destroy()
                     import admin
-                    admin.root.update()
-                    admin.root.mainloop()
+                    # admin.root.update()
+                    # admin.root.mainloop()
+                    admin.root.focus_force()
                 else:
                     import userPanel
                     userPanel.root.mainloop()
