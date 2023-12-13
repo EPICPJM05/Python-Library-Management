@@ -20,9 +20,11 @@ attemptCnt = 0
 
 # Functions
 def submitData():
+    if mobile_entry.size!=10:
+        mb.showerror("Login Failed", "Mobile No. must be of 10 digits, excluding Country code.\n Do Not Enter Country code.")
     global attemptCnt
     attemptCnt += 1
-    if attemptCnt >= 4:
+    if attemptCnt >= 5:
         mb.showerror("Login Failed", "You have exceeded your login attempts.")
     else:
         nameVal = name_entry.get()
@@ -103,6 +105,7 @@ mobile = Label(rt, text="Mobile", font="Georgia 10")
 mobile.grid(row=7, column=1, pady=10)
 
 mobile_entry = Entry(rt)
+
 mobile_entry.grid(row=7, column=2, ipadx=20, pady=10)
 
 
